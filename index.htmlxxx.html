@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b2a4a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<title>EL-LITHY سيستم الشغل</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f6;--card:#fff;--ink:#14213d;--mut:#66738a;--navy:#1b2a4a;--thread:#d99a1e;--line:#cfd7e3;--bad:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1420;--card:#192033;--ink:#e9edf5;--mut:#93a0b8;--line:#33405c;--thread:#e8ad3a}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,system-ui,sans-serif;padding-bottom:90px}
+header{background:var(--navy);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 0;position:sticky;top:0;z-index:5}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+h1{font-size:19px;margin:0;font-weight:800}
+.out{background:none;border:1px solid #ffffff55;color:#fff;border-radius:8px;padding:4px 12px;font:inherit;font-size:13px}
+#tabs{display:flex;gap:4px;overflow-x:auto;margin-top:8px}
+#tabs button{flex:1;min-width:max-content;background:none;border:0;border-bottom:3px solid transparent;color:#ffffffb0;font:inherit;font-weight:600;padding:10px 14px;cursor:pointer}
+#tabs button.on{color:#fff;border-color:var(--thread)}
+main{max-width:1100px;margin:0 auto;padding:16px}
+#view{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:var(--card);border-radius:10px;padding:14px 16px;position:relative;cursor:pointer;border:1px dashed var(--line);outline:1px solid var(--card);outline-offset:-5px}
+.card h3{margin:0 0 6px;font-size:17px;display:flex;align-items:center;gap:8px}
+.card p{margin:3px 0;color:var(--mut);font-size:14px}
+.card ul{margin:6px 0;padding:0 18px 0 0;font-size:14px;color:var(--mut)}
+.card b{color:var(--ink);font-weight:600}
+.tag{position:absolute;top:12px;left:12px;font-size:12px;padding:2px 10px;border-radius:99px;background:var(--navy);color:#fff}
+.num{font-weight:800;color:var(--thread)}
+.lg{width:42px;height:42px;object-fit:contain;border-radius:8px;background:#fff;border:1px solid var(--line)}
+.empty{grid-column:1/-1;text-align:center;color:var(--mut);padding:50px 0}
+.fab{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:20px;background:var(--thread);color:#1b1300;border:0;border-radius:14px;padding:14px 22px;font:inherit;font-weight:800;font-size:16px;box-shadow:0 4px 14px #0004}
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,94vw);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:#0008}
+form{padding:18px;display:grid;gap:10px;max-height:90vh;overflow:auto}
+form h2{margin:0 0 4px;font-size:18px}
+label{display:grid;gap:4px;font-size:14px;color:var(--mut)}
+input,select,textarea{font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+.row{display:flex;gap:10px;margin-top:6px}
+.row button{flex:1;padding:12px;border-radius:10px;border:0;font:inherit;font-weight:700}
+.save{background:var(--navy);color:#fff}.del{background:none;color:var(--bad);border:1px solid var(--bad)!important;flex:.5!important}.cancel{background:var(--line);color:var(--ink);border:0;border-radius:10px;padding:10px;font:inherit;font-weight:600}
+.ln{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px;border:1px dashed var(--line);border-radius:10px;margin-bottom:8px}
+.ln select,.ln .c1{grid-column:1/-1}
+.rm2{background:none;border:0;color:var(--bad);font:inherit;align-self:end;padding:10px}
+.sub{font-weight:800;color:var(--ink);margin:6px 0 0}
+#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+#login form{background:var(--card);border-radius:14px;width:min(380px,100%)}
+#err{color:var(--bad);font-size:14px;min-height:20px}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden}
+th,td{padding:12px;text-align:right;border-bottom:1px solid var(--line)}
+th{background:var(--navy);color:#fff;font-weight:600;font-size:14px}
+.wrap{grid-column:1/-1;overflow-x:auto}
+h4{grid-column:1/-1;margin:10px 0 0}
+:focus-visible{outline:3px solid var(--thread);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="login" hidden>
+<form id="lf"><h2>تسجيل الدخول</h2>
+<label>الإيميل<input id="em" type="email" autocomplete="username" required></label>
+<label>الباسورد<input id="pw" type="password" autocomplete="current-password" required></label>
+<div id="err"></div>
+<div class="row"><button class="save">دخول</button></div></form>
+</div>
+<div id="app" hidden>
+<header><div class="top"><h1>EL-LITHY سيستم الشغل</h1><button class="out" id="so">خروج</button></div><nav id="tabs"></nav></header>
+<main><div id="view"></div></main>
+<button class="fab" id="add">+ إضافة</button>
+</div>
+<dialog id="dlg"><form id="df" method="dialog"></form></dialog>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import{getFirestore,collection,onSnapshot,addDoc,setDoc,deleteDoc,getDoc,doc}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyAFMqmSkk3X0BNWhMqQEITgq2ePklPtif4",authDomain:"lithyysys.firebaseapp.com",projectId:"lithyysys",storageBucket:"lithyysys.firebasestorage.app",messagingSenderId:"97389753270",appId:"1:97389753270:web:e0f6f1ad4c0760bf950717"});
+const auth=getAuth(app),db=getFirestore(app),$=s=>document.querySelector(s);
+const ST=['جديد','في المصنع','جاهز','تم التسليم'];
+const SEED=['تيشرت نص كم','تيشرت كم','بنطلون','جاكت مبطن','سويتشيرت'];
+const C={
+orders:{t:'الطلبيات',n:'طلبية'},
+fabrics:{t:'القماش',n:'قماش'},
+clients:{t:'العملاء',n:'عميل',f:[['name','الاسم'],['type','النوع',['مدرسة','حضانة','أخرى']],['logo','لوجو المدرسة / الحضانة','i'],['phone','التليفون'],['notes','ملاحظات','t']]},
+factories:{t:'المصانع',n:'مصنع',f:[['name','الاسم'],['phone','التليفون'],['notes','ملاحظات','t']]},
+items:{t:'أنواع القطع',n:'نوع قطعة',f:[['name','الاسم (مثال: تيشرت نص كم)'],['mpp','قماش للقطعة (متر) - افتراضي','n'],['rate','مصنعية القطعة (جنيه) - افتراضي','n']]}};
+const D={clients:[],factories:[],orders:[],items:[],fabrics:[]};let tab='orders',subs=[],seeded=0;
+const nm=(k,id)=>D[k].find(x=>x.id===id)?.name||'—';
+const f1=n=>(+n||0).toLocaleString('ar-EG',{maximumFractionDigits:1});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const logo=id=>{const c=D.clients.find(x=>x.id===id);return c?.logo?`<img class=lg src="${c.logo}" alt="">`:''};
+const lines=o=>o.lines||(o.item?[{n:o.item,qty:o.qty,mpp:o.mpp,rate:o.rate,color:o.color}]:[]);
+const tot=o=>lines(o).reduce((a,l)=>({q:a.q+(+l.qty||0),m:a.m+((+l.qty||0)*(+l.mpp||0)),c:a.c+((+l.qty||0)*(+l.rate||0))}),{q:0,m:0,c:0});
+function card(k,x){
+if(k=='orders'){const t=tot(x);return`<div class=card data-id="${x.id}"><span class=tag>${esc(x.status)}</span><h3>${logo(x.client)}${esc(nm('clients',x.client))}</h3>
+<p>المصنع: <b>${esc(nm('factories',x.factory))}</b></p>
+<ul>${lines(x).map(l=>`<li>${esc(l.n)}${l.color?' — '+esc(l.color):''}: <b>${f1(l.qty)}</b> قطعة · ${f1(l.qty*l.mpp)} م قماش · ${f1(l.qty*l.rate)} جنيه</li>`).join('')}</ul>
+<p>الإجمالي: <span class=num>${f1(t.q)}</span> قطعة · <span class=num>${f1(t.m)}</span> م · <span class=num>${f1(t.c)}</span> جنيه</p>
+<p>تسليم المصنع: ${esc(x.sent||'—')} · موعد العميل: <b>${esc(x.due||'—')}</b></p></div>`}
+if(k=='fabrics'){const d=(x.dist||[]).reduce((a,r)=>a+(+r.qty||0),0),rem=(+x.total||0)-d;return`<div class=card data-id="${x.id}"><span class=tag>${esc(x.unit)}</span><h3>${esc(x.name)}${x.color?' — '+esc(x.color):''}</h3>
+<p>الإجمالي: <span class=num>${f1(x.total)}</span> · الموزع: <b>${f1(d)}</b> · المتبقي في مخزنك: <span class=num>${f1(rem)}</span>${rem<0?' ⚠':''}</p>
+<ul>${(x.dist||[]).map(r=>`<li>${esc(nm('factories',r.factory))}: <b>${f1(r.qty)}</b> ${esc(x.unit)}${r.date?' · '+esc(r.date):''}</li>`).join('')}</ul>${x.notes?`<p>${esc(x.notes)}</p>`:''}</div>`}
+if(k=='items')return`<div class=card data-id="${x.id}"><h3>${esc(x.name)}</h3><p>قماش: ${f1(x.mpp)} م · مصنعية: ${f1(x.rate)} جنيه (افتراضي)</p></div>`;
+return`<div class=card data-id="${x.id}">${x.type?`<span class=tag>${esc(x.type)}</span>`:''}<h3>${logo(x.id)}${esc(x.name)}</h3><p>${esc(x.phone||'')}</p><p>${esc(x.notes||'')}</p></div>`}
+function tbl(h,rows){return rows?`<div class=wrap><table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows}</table></div>`:''}
+function summary(){
+const F={},T={};
+D.orders.forEach(o=>{const f=F[o.factory]??={n:0,q:0,m:0,c:0};f.n++;lines(o).forEach(l=>{const q=+l.qty||0,m=q*(+l.mpp||0),c=q*(+l.rate||0);f.q+=q;f.m+=m;f.c+=c;const t=T[l.n]??={q:0,m:0,c:0};t.q+=q;t.m+=m;t.c+=c})});
+const a=Object.entries(F).map(([id,r])=>`<tr><td>${esc(nm('factories',id))}</td><td>${r.n}</td><td>${f1(r.q)}</td><td>${f1(r.m)}</td><td>${f1(r.c)}</td></tr>`).join('');
+const b=Object.entries(T).map(([n,r])=>`<tr><td>${esc(n)}</td><td>${f1(r.q)}</td><td>${f1(r.m)}</td><td>${f1(r.c)}</td></tr>`).join('');
+const fs=D.fabrics.map(f=>{const d=(f.dist||[]).reduce((q,r)=>q+(+r.qty||0),0);return`<tr><td>${esc(f.name)}${f.color?' — '+esc(f.color):''}</td><td>${esc(f.unit)}</td><td>${f1(f.total)}</td><td>${f1(d)}</td><td>${f1((+f.total||0)-d)}</td></tr>`}).join('');
+const hr=D.fabrics.flatMap(f=>(f.dist||[]).map(r=>`<tr><td>${esc(nm('factories',r.factory))}</td><td>${esc(f.name)}${f.color?' — '+esc(f.color):''}</td><td>${f1(r.qty)} ${esc(f.unit)}</td></tr>`)).join('');
+const o=a?`<h4>حسب المصنع</h4>${tbl(['المصنع','طلبيات','قطع','قماش (م)','مصنعية (جنيه)'],a)}<h4>حسب نوع القطعة</h4>${tbl(['القطعة','قطع','قماش (م)','مصنعية (جنيه)'],b)}`:'';
+const st=fs?`<h4>مخزون القماش</h4>${tbl(['القماش','الوحدة','الإجمالي','الموزع','المتبقي'],fs)}`+(hr?`<h4>القماش عند المصانع</h4>${tbl(['المصنع','القماش','الكمية'],hr)}`:''):'';
+return(o+st)||'<p class=empty>ضيف طلبيات أو قماش وهيظهر الملخص هنا</p>'}
+function render(){
+const ks=[...Object.keys(C),'sum'];
+$('#tabs').innerHTML=ks.map(k=>`<button data-t="${k}" class="${k==tab?'on':''}">${k=='sum'?'الملخص':C[k].t}</button>`).join('');
+$('#add').hidden=tab=='sum';
+$('#view').innerHTML=tab=='sum'?summary():(D[tab].map(x=>card(tab,x)).join('')||`<p class=empty>مفيش ${C[tab].t} لسه. اضغط "إضافة" وابدأ.</p>`)}
+function fit(file,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,240/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL(file.type=='image/png'?'image/png':'image/jpeg',.85))};im.src=r.result};r.readAsDataURL(file)}
+const btns=(id,k)=>`<div class=row><button class=save value=ok>حفظ</button>${id?'<button type=button class=del id=rm>حذف</button>':''}<button type=button class=cancel id=cx>إلغاء</button></div>`;
+function wire(k,id){
+$('#cx').onclick=()=>$('#dlg').close();
+if(id)$('#rm').onclick=async()=>{if(confirm('متأكد من الحذف؟')){await deleteDoc(doc(db,k,id));$('#dlg').close()}}}
+function open(id){
+if(tab=='orders')return openOrder(id);
+if(tab=='fabrics')return openFabric(id);
+const k=tab,x=D[k].find(y=>y.id==id)||{};
+const inp=([n,l,t])=>{const v=x[n]??'';let h;
+if(Array.isArray(t))h=`<select name=${n}>${t.map(o=>`<option ${o==v?'selected':''}>${o}</option>`).join('')}</select>`;
+else if(t=='t')h=`<textarea name=${n} rows=2>${esc(v)}</textarea>`;
+else if(t=='i')h=`<input type=hidden name=${n} value="${esc(v)}"><div id=lgp>${v?`<img class=lg src="${esc(v)}">`:''}</div><input type=file accept="image/*" id=fi><button type=button class=cancel id=xl>إزالة اللوجو</button>`;
+else h=`<input name=${n} type="${t=='n'?'number':'text'}" ${t=='n'?'step=any inputmode=decimal':''} value="${esc(v)}" ${n=='name'?'required':''}>`;
+return`<label>${l}${h}</label>`};
+$('#df').innerHTML=`<h2>${id?'تعديل':'إضافة'} ${C[k].n}</h2>${C[k].f.map(inp).join('')}${btns(id)}`;
+wire(k,id);
+const fi=$('#fi');if(fi){fi.onchange=e=>{const f=e.target.files[0];if(f)fit(f,u=>{$('[name=logo]').value=u;$('#lgp').innerHTML=`<img class=lg src="${u}">`})};$('#xl').onclick=()=>{$('[name=logo]').value='';$('#lgp').innerHTML=''}}
+$('#df').onsubmit=async e=>{if(e.submitter?.value!='ok')return;
+const d=Object.fromEntries(new FormData($('#df')));C[k].f.forEach(([n,,t])=>{if(t=='n')d[n]=+d[n]||0});
+try{id?await setDoc(doc(db,k,id),d):await addDoc(collection(db,k),d)}catch(er){alert('تعذر الحفظ: '+er.message)}};
+$('#dlg').showModal()}
+const row=(l={})=>{const has=D.items.some(i=>i.id==l.item);return`<div class=ln><select class=it><option value="">نوع القطعة...</option>${D.items.map(i=>`<option value="${i.id}" ${i.id==l.item?'selected':''}>${esc(i.name)}</option>`).join('')}${l.item&&!has?`<option value="${esc(l.item)}" selected>${esc(l.n)}</option>`:''}</select>
+<label class=c1>اللون / الخامة<input class=cl value="${esc(l.color||'')}"></label>
+<label>الكمية (قطعة)<input class=qt type=number inputmode=decimal step=any value="${l.qty??''}"></label>
+<label>قماش للقطعة (متر)<input class=mp type=number inputmode=decimal step=any value="${l.mpp??''}"></label>
+<label>مصنعية القطعة (جنيه)<input class=rt type=number inputmode=decimal step=any value="${l.rate??''}"></label>
+<button type=button class=rm2>حذف القطعة ✕</button></div>`};
+function openOrder(id){
+const x=D.orders.find(y=>y.id==id)||{};
+const sel=(n,l,k,v)=>`<label>${l}<select name=${n} required><option value="">اختار...</option>${D[k].map(o=>`<option value="${o.id}" ${o.id==v?'selected':''}>${esc(o.name)}</option>`).join('')}</select></label>`;
+const L=lines(x);
+$('#df').innerHTML=`<h2>${id?'تعديل':'إضافة'} طلبية</h2>${sel('client','العميل','clients',x.client)}${sel('factory','المصنع','factories',x.factory)}
+<div class=sub>القطع</div><div id=ls>${(L.length?L:[{}]).map(row).join('')}</div><button type=button class=cancel id=al>+ إضافة قطعة</button>
+<label>تاريخ تسليم القماش للمصنع<input name=sent type=date value="${esc(x.sent||'')}"></label>
+<label>موعد التسليم للعميل<input name=due type=date value="${esc(x.due||'')}"></label>
+<label>الحالة<select name=status>${ST.map(o=>`<option ${o==x.status?'selected':''}>${o}</option>`).join('')}</select></label>
+<label>ملاحظات<textarea name=notes rows=2>${esc(x.notes||'')}</textarea></label>${btns(id)}`;
+wire('orders',id);
+$('#al').onclick=()=>$('#ls').insertAdjacentHTML('beforeend',row());
+$('#ls').onclick=e=>{if(e.target.classList.contains('rm2'))e.target.closest('.ln').remove()};
+$('#ls').onchange=e=>{if(!e.target.classList.contains('it'))return;const r=e.target.closest('.ln'),i=D.items.find(y=>y.id==e.target.value);if(!i)return;
+if(!+r.querySelector('.mp').value)r.querySelector('.mp').value=i.mpp||'';if(!+r.querySelector('.rt').value)r.querySelector('.rt').value=i.rate||''};
+$('#df').onsubmit=async e=>{if(e.submitter?.value!='ok')return;
+const fd=new FormData($('#df')),d={};['client','factory','sent','due','status','notes'].forEach(n=>d[n]=fd.get(n)||'');
+d.lines=[...document.querySelectorAll('#ls .ln')].map(r=>{const s=r.querySelector('.it');return{item:s.value,n:s.selectedOptions[0]?.textContent||'',color:r.querySelector('.cl').value,qty:+r.querySelector('.qt').value||0,mpp:+r.querySelector('.mp').value||0,rate:+r.querySelector('.rt').value||0}}).filter(l=>l.item||l.qty);
+try{id?await setDoc(doc(db,'orders',id),d):await addDoc(collection(db,'orders'),d)}catch(er){alert('تعذر الحفظ: '+er.message)}};
+$('#dlg').showModal()}
+
+const drow=(r={})=>`<div class=ln><select class=fs><option value="">المصنع...</option>${D.factories.map(o=>`<option value="${o.id}" ${o.id==r.factory?'selected':''}>${esc(o.name)}</option>`).join('')}</select>
+<label>الكمية<input class=dq type=number inputmode=decimal step=any value="${r.qty??''}"></label>
+<label>التاريخ<input class=dd type=date value="${esc(r.date||'')}"></label>
+<button type=button class=rm2>حذف ✕</button></div>`;
+function openFabric(id){
+const x=D.fabrics.find(y=>y.id==id)||{};
+$('#df').innerHTML=`<h2>${id?'تعديل':'إضافة'} قماش</h2>
+<label>الاسم (مثال: ضهر ميلتون)<input name=name required value="${esc(x.name||'')}"></label>
+<label>اللون<input name=color value="${esc(x.color||'')}"></label>
+<label>الوحدة<select name=unit>${['كيلو','متر'].map(o=>`<option ${o==x.unit?'selected':''}>${o}</option>`).join('')}</select></label>
+<label>إجمالي اللي اشتريته<input name=total type=number inputmode=decimal step=any value="${x.total??''}"></label>
+<div class=sub>التوزيع على المصانع</div><div id=ls>${(x.dist||[]).map(drow).join('')}</div><button type=button class=cancel id=al>+ إضافة توزيع</button>
+<label>ملاحظات<textarea name=notes rows=2>${esc(x.notes||'')}</textarea></label>${btns(id)}`;
+wire('fabrics',id);
+$('#al').onclick=()=>$('#ls').insertAdjacentHTML('beforeend',drow());
+$('#ls').onclick=e=>{if(e.target.classList.contains('rm2'))e.target.closest('.ln').remove()};
+$('#df').onsubmit=async e=>{if(e.submitter?.value!='ok')return;
+const fd=new FormData($('#df')),d={};['name','color','unit','notes'].forEach(n=>d[n]=fd.get(n)||'');d.total=+fd.get('total')||0;
+d.dist=[...document.querySelectorAll('#ls .ln')].map(r=>({factory:r.querySelector('.fs').value,qty:+r.querySelector('.dq').value||0,date:r.querySelector('.dd').value})).filter(r=>r.factory||r.qty);
+try{id?await setDoc(doc(db,'fabrics',id),d):await addDoc(collection(db,'fabrics'),d)}catch(er){alert('تعذر الحفظ: '+er.message)}};
+$('#dlg').showModal()}
+async function seed(){try{const m=doc(db,'meta','seed');if((await getDoc(m)).exists())return;await setDoc(m,{on:1});for(let i=0;i<SEED.length;i++)await setDoc(doc(db,'items','s'+i),{name:SEED[i],mpp:0,rate:0})}catch(e){}}
+$('#tabs').onclick=e=>{const t=e.target.dataset.t;if(t){tab=t;render()}};
+$('#view').onclick=e=>{const c=e.target.closest('.card');if(c)open(c.dataset.id)};
+$('#add').onclick=()=>open();
+$('#so').onclick=()=>signOut(auth);
+$('#lf').onsubmit=async e=>{e.preventDefault();$('#err').textContent='';
+try{await signInWithEmailAndPassword(auth,$('#em').value.trim(),$('#pw').value)}catch(er){$('#err').textContent='الإيميل أو الباسورد غلط، أو الحساب مش متضاف.'}};
+onAuthStateChanged(auth,u=>{
+subs.forEach(s=>s());subs=[];
+$('#login').hidden=!!u;$('#app').hidden=!u;
+if(u)Object.keys(D).forEach(k=>subs.push(onSnapshot(collection(db,k),s=>{D[k]=s.docs.map(d=>({id:d.id,...d.data()}));if(k=='clients'||k=='factories')D[k].sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));if(k=='items'&&s.empty&&!seeded){seeded=1;seed()}render()},er=>alert('مشكلة في الاتصال بقاعدة البيانات: '+er.code))));
+render()});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
